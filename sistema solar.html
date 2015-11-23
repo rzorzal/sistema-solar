@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Sistema solar three.js</title>
+
+        <style type="text/css">
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+    </head>
+    <body>
+
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
+        <script type="text/javascript">
+            var ORIGEM = new THREE.Vector3(0, 0, 0);
+
+            var targetRotationY = 0;
+            var targetRotationOnMouseDownY = 0;
+
+            var targetRotationX = 0;
+            var targetRotationOnMouseDownX = 0;
+
+
+            var windowHalfX = window.innerWidth / 2;
+            var windowHalfY = window.innerHeight / 2;
+
+            var cena = new THREE.Scene();
+
+            var fovy = 75,
+                    aspectRatio = window.innerWidth / window.innerHeight,
+                    near = 1,
+                    far = 300;
+
+            var camera = new THREE.PerspectiveCamera(fovy, aspectRatio, near, far);
+            camera.position.set(75, 75, 75);
+            camera.lookAt(ORIGEM);
+
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
+
+            document.addEventListener('mousewheel', onDocumentMouseWheel, false);
+            document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+
+            document.addEventListener('keydown', onKeyDown, false);
+
+            window.addEventListener('resize', onWindowResize, false);
+
+
+            function onKeyDown(e) {
+                console.log(e.keyCode);
+                var move = 20;
+                if (e.keyCode == 37) {
+                    camera.position.x += move;
+                } else if (e.keyCode == 38) {
+                    camera.position.y -= move;
+                } else if (e.keyCode == 39) {
+                    camera.position.x -= move;
+                } else if (e.keyCode == 40) {
+                    camera.position.y += move;
+                }
+            }
+
+            function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+            }
+
+            function onDocumentMouseDown(event) {
+
+                event.preventDefault();
+
+                document.addEventListener('mousemove', onDocumentMouseMove, false);
+                document.addEventListener('mouseup', onDocumentMouseUp, false);
+                document.addEventListener('mouseout', onDocumentMouseOut, false);
+
+                mouseXOnMouseDownY = event.clientX - windowHalfX;
+                mouseXOnMouseDownX = event.clientY - windowHalfY;
+                targetRotationOnMouseDownY = targetRotationY;
+                targetRotationOnMouseDownX = targetRotationX;
+
+            }
+
+            function onDocumentMouseMove(event) {
+
+                mouseX = event.clientX - windowHalfX;
+                mouseY = event.clientY - windowHalfY;
+
+                targetRotationY = targetRotationOnMouseDownY + (mouseX - mouseXOnMouseDownY) * 0.02;
+                targetRotationX = targetRotationOnMouseDownX + (mouseY - mouseXOnMouseDownX) * 0.02;
+
+            }
+
+            function onDocumentMouseUp(event) {
+
+                document.removeEventListener('mousemove', onDocumentMouseMove, false);
+                document.removeEventListener('mouseup', onDocumentMouseUp, false);
+                document.removeEventListener('mouseout', onDocumentMouseOut, false);
+
+            }
+
+            function onDocumentMouseOut(event) {
+
+                document.removeEventListener('mousemove', onDocumentMouseMove, false);
+                document.removeEventListener('mouseup', onDocumentMouseUp, false);
+                document.removeEventListener('mouseout', onDocumentMouseOut, false);
+
+            }
+
+            function onDocumentTouchStart(event) {
+
+                if (event.touches.length == 1) {
+
+                    event.preventDefault();
+
+                    mouseXOnMouseDownY = event.touches[ 0 ].pageX - windowHalfX;
+                    targetRotationOnMouseDownY = targetRotationY;
+
+                    mouseXOnMouseDownX = event.touches[ 0 ].pageY - windowHalfY;
+                    targetRotationOnMouseDownX = targetRotationX;
+
+                }
+
+            }
+
+            function onDocumentTouchMove(event) {
+
+                if (event.touches.length == 1) {
+
+                    event.preventDefault();
+
+                    mouseX = event.touches[ 0 ].pageX - windowHalfX;
+                    targetRotation = targetRotationOnMouseDown + (mouseX - mouseXOnMouseDownY) * 0.05;
+
+                    mouseY = event.touches[ 0 ].pageY - windowHalfY;
+                    targetRotationX = targetRotationOnMouseDownX + (mouseY - mouseXOnMouseDownX) * 0.05;
+
+                }
+
+            }
+
+            function onDocumentMouseWheel(event) {
+
+                // WebKit
+
+                if (event.wheelDeltaY) {
+                    camera.position.z -= event.wheelDeltaY * 22.05;
+                    // Opera / Explorer 9
+                } else if (event.wheelDelta) {
+                    camera.position.z -= event.wheelDelta * 22.05;
+                    // Firefox
+                } else if (event.detail) {
+                    camera.position.z += event.detail * 20.0;
+                }
+                camera.updateProjectionMatrix();
+
+            }
+
+            function createPath(radius) {
+                segments = 100;
+                material = new THREE.LineBasicMaterial({color: 0x333333});
+                geometry = new THREE.CircleGeometry(radius, segments);
+                geometry.vertices.shift();
+                line = new THREE.Line(geometry, material);
+                line.position.set(0, 0, 0);
+                line.rotation.x = 1.57079633;
+                cena.add(line);
+            }
+
+            function criarSol(terra, mercurio,venus,marte,jupter,saturno,urano,netuno)
+            {
+                var geometriaSol = new THREE.SphereGeometry(20, 20, 20),
+                        materialSol = new THREE.MeshLambertMaterial({
+                            map: THREE.ImageUtils.loadTexture('sun.jpg')
+                        }),
+                        sol = new THREE.Mesh(geometriaSol, materialSol);
+
+                sol.add(terra);
+                sol.add(mercurio);
+                sol.add(venus);
+                sol.add(marte);
+                sol.add(jupter);
+                sol.add(saturno);
+                sol.add(urano);
+                sol.add(netuno);
+                
+                cena.add(sol);
+
+                return sol;
+            }
+
+            function criarTerra(objeto)
+            {
+                var geometriaTerra = new THREE.SphereGeometry(5, 20, 20),
+                        materialTerra = new THREE.MeshLambertMaterial({
+                            map: THREE.ImageUtils.loadTexture('earth.jpg')
+                        }),
+                        terra = new THREE.Mesh(geometriaTerra, materialTerra);
+
+
+                terra.translateX(64);
+                terra.add(objeto);
+
+                createPath(64);
+
+                return terra;
+            }
+
+            function criarLua()
+            {
+                var geometriaLua = new THREE.SphereGeometry(1, 20, 20),
+                        materialLua = new THREE.MeshBasicMaterial({color: 0x909090}),
+                        lua = new THREE.Mesh(geometriaLua, materialLua);
+
+                lua.translateX(10);
+
+                return lua;
+            }
+
+            function criarLuz()
+            {
+                var pointLight = new THREE.PointLight(0xFFFFFF);
+                pointLight.position.set(10, 50, 30);
+                cena.add(pointLight);
+            }
+
+
+
+            function rotacionarSol()
+            {
+                var matrizRotacao = new THREE.Matrix4();
+                matrizRotacao.makeRotationY(calcularRadianos(1));
+                sol.applyMatrix(matrizRotacao);
+            }
+
+            function rotacionarTerra()
+            {
+                var matrizRotacaoY = new THREE.Matrix4();
+                matrizRotacaoY.makeRotationY(calcularRadianos(1));
+                terra.applyMatrix(matrizRotacaoY);
+
+                var matrizRotacaoEixo = new THREE.Matrix4(),
+                        matrizTranslacaoPosicao = new THREE.Matrix4(),
+                        matrizTranslacaoOrigem = new THREE.Matrix4(),
+                        posicao = terra.position;
+
+                matrizRotacaoEixo.makeRotationY(calcularRadianos(1.5));
+                matrizTranslacaoPosicao.makeTranslation(posicao.x, posicao.y, posicao.z);
+                matrizTranslacaoOrigem.makeTranslation(-posicao.x, -posicao.y, -posicao.z);
+
+                terra.applyMatrix(matrizTranslacaoOrigem);
+                terra.applyMatrix(matrizRotacaoEixo);
+                terra.applyMatrix(matrizTranslacaoPosicao);
+            }
+
+            function rotacionarLua()
+            {
+                var matrizRotacaoY = new THREE.Matrix4();
+                matrizRotacaoY.makeRotationY(calcularRadianos(2));
+                lua.applyMatrix(matrizRotacaoY);
+
+                var matrizRotacaoEixo = new THREE.Matrix4(),
+                        matrizTranslacaoPosicao = new THREE.Matrix4(),
+                        matrizTranslacaoOrigem = new THREE.Matrix4(),
+                        posicao = lua.position;
+
+                matrizRotacaoEixo.makeRotationY(calcularRadianos(0.6));
+                matrizTranslacaoPosicao.makeTranslation(posicao.x, posicao.y, posicao.z);
+                matrizTranslacaoOrigem.makeTranslation(-posicao.x, -posicao.y, -posicao.z);
+
+                lua.applyMatrix(matrizTranslacaoOrigem);
+                lua.applyMatrix(matrizRotacaoEixo);
+                lua.applyMatrix(matrizTranslacaoPosicao);
+            }
+
+
+            function criaPlaneta(imagem, scale, ray) {
+                var geometria = new THREE.SphereGeometry(scale, 20, 20),
+                        material = new THREE.MeshLambertMaterial({
+                            map: THREE.ImageUtils.loadTexture(imagem)
+                        }),
+                        planeta = new THREE.Mesh(geometria, material);
+
+
+                planeta.translateX(ray);
+                //cena.add(planeta);
+
+                createPath(ray);
+
+
+                return planeta;
+            }
+
+            function rotacionaPlaneta(planeta, angleSun, angleSelf) {
+                var matrizRotacaoY = new THREE.Matrix4();
+                matrizRotacaoY.makeRotationY(calcularRadianos(angleSun));
+                planeta.applyMatrix(matrizRotacaoY);
+
+                var matrizRotacaoEixo = new THREE.Matrix4(),
+                        matrizTranslacaoPosicao = new THREE.Matrix4(),
+                        matrizTranslacaoOrigem = new THREE.Matrix4(),
+                        posicao = planeta.position;
+
+                matrizRotacaoEixo.makeRotationY(calcularRadianos(angleSelf));
+                matrizTranslacaoPosicao.makeTranslation(posicao.x, posicao.y, posicao.z);
+                matrizTranslacaoOrigem.makeTranslation(-posicao.x, -posicao.y, -posicao.z);
+
+                planeta.applyMatrix(matrizTranslacaoOrigem);
+                planeta.applyMatrix(matrizRotacaoEixo);
+                planeta.applyMatrix(matrizTranslacaoPosicao);
+            }
+
+
+            function calcularRadianos(grau)
+            {
+                return grau * Math.PI / 180;
+            }
+
+
+            var lua = criarLua();
+            var terra = criarTerra(lua);
+
+            var mercurio = criaPlaneta('mercurio.jpg', 2, 32);
+            var venus = criaPlaneta('venus.jpg', 4, 46);
+            var marte = criaPlaneta('threex.planets/images/marsmap1k.jpg', 2.2, 77);
+            var jupter = criaPlaneta('threex.planets/images/jupitermap.jpg', 5.0, 90);
+            var saturno = criaPlaneta('threex.planets/images/saturnmap.jpg', 4.3, 102);
+            var urano = criaPlaneta('threex.planets/images/uranusmap.jpg', 4.7, 115);
+            var netuno = criaPlaneta('threex.planets/images/neptunemap.jpg', 4.7, 126);
+            
+
+
+            var sol = criarSol(terra, mercurio,venus,marte,jupter,saturno,urano,netuno  );
+            criarLuz();
+
+            function render()
+            {
+                renderer.render(cena, camera);
+
+                rotacionarLua();
+                rotacionarTerra();
+
+                rotacionaPlaneta(mercurio, 2.0, 2.5);
+                rotacionaPlaneta(venus, 1.8, 2.0);
+                rotacionaPlaneta(marte, 0.8, 1.6);
+                rotacionaPlaneta(jupter, 0.3, 0.6);
+                rotacionaPlaneta(saturno, 0.4, 0.8);
+                rotacionaPlaneta(urano, 0.9, 0.8);
+                rotacionaPlaneta(netuno, 0.7, 0.5);
+
+                rotacionarSol();
+
+
+                requestAnimationFrame(render);
+
+                cena.rotation.y += (targetRotationY - cena.rotation.y) * 0.05;
+                cena.rotation.x += (targetRotationX - cena.rotation.x) * 0.05;
+                renderer.render(cena, camera);
+
+            }
+
+            function animate() {
+
+                requestAnimationFrame(animate);
+
+                renderer.render(cena, camera);
+
+                render();
+
+            }
+
+
+
+            render();
+            //animate();
+
+        </script>
+    </body>
+</html>
