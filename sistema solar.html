@@ -14,6 +14,9 @@
     <body>
 
         <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
+        <script type="text/javascript" src="threex.planets/threex.planets.js"></script>
+        <script type="text/javascript" src="threex.planets/threex.atmospherematerial.js"></script>
+        <script type="text/javascript" src="threex.planets/threex.atmospheredatgui.js"></script>
         <script type="text/javascript">
             var ORIGEM = new THREE.Vector3(0, 0, 0);
 
@@ -29,13 +32,13 @@
 
             var cena = new THREE.Scene();
 
-            var fovy = 75,
+            var fovy = 60,
                     aspectRatio = window.innerWidth / window.innerHeight,
                     near = 1,
                     far = 300;
 
             var camera = new THREE.PerspectiveCamera(fovy, aspectRatio, near, far);
-            camera.position.set(75, 75, 75);
+            camera.position.set(90, 100, 90);
             camera.lookAt(ORIGEM);
 
             var renderer = new THREE.WebGLRenderer();
@@ -205,7 +208,7 @@
             {
                 var geometriaTerra = new THREE.SphereGeometry(5, 20, 20),
                         materialTerra = new THREE.MeshLambertMaterial({
-                            map: THREE.ImageUtils.loadTexture('earth.jpg')
+                            map: THREE.ImageUtils.loadTexture('threex.planets/images/earthmap1k.jpg')
                         }),
                         terra = new THREE.Mesh(geometriaTerra, materialTerra);
 
@@ -233,7 +236,13 @@
             {
                 var pointLight = new THREE.PointLight(0xFFFFFF);
                 pointLight.position.set(10, 50, 30);
+
+		var pointLight2 = new THREE.PointLight(0xFFFFFF);
+                pointLight2.position.set(50, -50, -30);
+
+                
                 cena.add(pointLight);
+                cena.add(pointLight2);
             }
 
 
